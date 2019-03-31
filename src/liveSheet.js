@@ -1,6 +1,7 @@
 import Sheet from './sheet';
 import { YBLOCKS } from './constants'
 import { dropRandom } from './shapes'
+import { cloneBuffer } from './utils'
 
 export default class LiveSheet extends Sheet {
     constructor(p, staticSheet){
@@ -11,10 +12,13 @@ export default class LiveSheet extends Sheet {
     }
 
     update(){
+        let shouldFreezeBuffer = false
         let bufferIsEmpty = true
+        const draftBuffer = cloneBuffer(this._buffer)
 
-        this.iterate((x, y)=>{
-            const symbol = this.get(x, y)
+        this.iterate((x, y) => {
+            const symbol = draftBuffer[x][y]
+
             if(symbol == null){
                 return
             }
@@ -22,18 +26,35 @@ export default class LiveSheet extends Sheet {
 
             const nextY = y + 1
 
-            this.set(x, y, null)
+            draftBuffer[x][y] = null
 
             if(nextY >= YBLOCKS || this._staticSheet.get(x, nextY) != null){
-                this._staticSheet.set(x, y, symbol)
-                return
+                shouldFreezeBuffer = true
+                return true  // Stops iterating
             }
 
-            this.set(x, nextY, symbol)
+            draftBuffer[x][nextY] = symbol
         })
 
-        if(bufferIsEmpty){
+        if(shouldFreezeBuffer){
+            this.iterate((x, y)=>{
+                const symbol = this.get(x, y)
+
+                if(symbol == null){
+                    return
+                }
+
+                this.set(x, y, null)
+                this._staticSheet.set(x, y, symbol)
+            })
+
+        }else {
+            this._buffer = draftBuffer
+        }
+
+        if(bufferIsEmpty) {
             dropRandom(this)
         }
+
     }
 }
