@@ -1,0 +1,17 @@
+{
+  "name": "tetris.js",
+  "version": "0.1",
+  "scripts": {
+    "build": "parcel ./src/index.html"
+  },
+  "author": {
+    "name": "Gonzalo Rizzo",
+    "email": "me@gonzalorizzo.com"
+  },
+  "private": true,
+  "dependencies": {
+    "babel-polyfill": "^6.26.0",
+    "p5": "^0.7.3",
+    "parcel-bundler": "^1.12.3"
+  }
+}
