@@ -29,4 +29,12 @@ new p5(p => {
             p.rect(coor(x), coor(y), BSIZE, BSIZE)
         })
     };
+
+    p.keyPressed = event => {
+        if(event.key == 'a') {
+            liveSheet.moveLeft()
+        }else if(event.key=='d'){
+            liveSheet.moveRight()
+        }
+    }
 })

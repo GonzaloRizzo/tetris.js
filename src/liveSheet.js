@@ -1,5 +1,5 @@
 import Sheet from './sheet';
-import { YBLOCKS } from './constants'
+import { YBLOCKS, XBLOCKS } from './constants'
 import { dropRandom } from './shapes'
 import { cloneBuffer } from './utils'
 
@@ -54,6 +54,42 @@ export default class LiveSheet extends Sheet {
 
         if(bufferIsEmpty) {
             dropRandom(this)
+        }
+
+    }
+
+    moveRight(){
+        this._moveX(1)
+    }
+
+    moveLeft(){
+        this._moveX(-1)
+    }
+
+    _moveX(xOffset){
+        const draftBuffer = cloneBuffer(this._buffer)
+        let isLegal = true
+        const iterator = xOffset < 0 ? this.iterateLeft : this.iterateRight
+        iterator((x, y) => {
+            const symbol = this.get(x, y)
+            if(symbol == null){
+                return
+            }
+            const nextX = x + xOffset
+
+            draftBuffer[x][y] = null
+
+            if(nextX < 0 || nextX >= XBLOCKS || this._staticSheet.get(nextX, y) != null){
+                isLegal = false
+                return true  // Stop iterating
+            }
+
+            draftBuffer[nextX][y] = symbol
+        })
+
+        if(isLegal){
+            console.log("moving")
+            this._buffer=draftBuffer
         }
 
     }
