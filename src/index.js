@@ -14,6 +14,7 @@ new p5(p => {
     p.setup = () => {
         p.createCanvas(XBLOCKS * BSIZE, YBLOCKS * BSIZE)
         dropRandom(liveSheet)
+        window.a = { staticSheet, liveSheet}
     };
 
     p.draw = () => {

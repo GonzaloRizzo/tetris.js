@@ -47,6 +47,7 @@ export default class LiveSheet extends Sheet {
                 this.set(x, y, null)
                 this._staticSheet.set(x, y, symbol)
             })
+            this._staticSheet.cleanLines()
 
         }else {
             this._buffer = draftBuffer
@@ -67,6 +68,7 @@ export default class LiveSheet extends Sheet {
     }
 
     _moveX(xOffset){
+        // todo, don't clone it, just create a new one and place translated blocks there
         const draftBuffer = cloneBuffer(this._buffer)
         let isLegal = true
         const iterator = xOffset < 0 ? this.iterateLeft : this.iterateRight
