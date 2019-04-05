@@ -36,6 +36,10 @@ new p5(p => {
             liveSheet.moveLeft()
         }else if(event.key=='d'){
             liveSheet.moveRight()
+        }else if (event.key == 'w'){
+            liveSheet.rotate()
+        }else if (event.key == 'W'){
+            liveSheet.rotate(false)
         }
     }
 })

@@ -1,14 +1,15 @@
 import Sheet from './sheet';
 import { YBLOCKS, XBLOCKS } from './constants'
 import { dropRandom } from './shapes'
-import { cloneBuffer } from './utils'
+import { cloneBuffer, rotatePoint } from './utils'
 
 export default class LiveSheet extends Sheet {
     constructor(p, staticSheet){
         super()
         this._p = p
         this._staticSheet = staticSheet
-        setInterval(() => this.update(), 100)
+        this.centerPoint = null
+        setInterval(() => this.update(), 750)
     }
 
     update(){
@@ -50,6 +51,7 @@ export default class LiveSheet extends Sheet {
             this._staticSheet.cleanLines()
 
         }else {
+            this.centerPoint[1] += 1
             this._buffer = draftBuffer
         }
 
@@ -90,8 +92,40 @@ export default class LiveSheet extends Sheet {
         })
 
         if(isLegal){
-            console.log("moving")
+            this.centerPoint[0] += xOffset
             this._buffer=draftBuffer
+        }
+
+    }
+
+    rotate(clockwise=true){
+        if(!this.centerPoint){
+            console.log("There's not center point!")
+            return
+        }
+
+        const draftBuffer = this.buildBuffer()
+        let rotationIsValid = true
+
+        this.iterate((x, y) => {
+            const symbol = this.get(x, y)
+            if(symbol == null){
+                return
+            }
+
+            const [newX, newY] = rotatePoint([x, y], this.centerPoint, clockwise)
+
+            if (!this._staticSheet.positionIsEmpty(newX, newY)){
+                rotationIsValid = false
+                return true
+            }
+
+            draftBuffer[newX][newY] = symbol
+        })
+
+        if(rotationIsValid){
+            this._buffer=draftBuffer
+            this.centerPoint = rotatePoint(this.centerPoint, this.centerPoint)
         }
 
     }

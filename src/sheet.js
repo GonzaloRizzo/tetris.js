@@ -2,10 +2,15 @@ import { XBLOCKS, YBLOCKS } from './constants'
 
 export default class Sheet {
     constructor(){
-        this._buffer = new Array(XBLOCKS)
+        this._buffer = this.buildBuffer()
+    }
+
+    buildBuffer(){
+        const buffer = new Array(XBLOCKS)
         for(let column = 0; column < XBLOCKS; column++){
-            this._buffer[column] = new Array(YBLOCKS).fill(null)
+            buffer[column] = new Array(YBLOCKS).fill(null)
         }
+        return buffer
     }
 
     get(x, y){
@@ -75,5 +80,19 @@ export default class Sheet {
                 this.set(x, y+completedLines, symbol)
             })
         }
+    }
+
+    positionIsEmpty(x, y){
+        const isOffGrid = x < 0 || x >= XBLOCKS || y < 0 || y >= YBLOCKS
+        if(isOffGrid){
+            return false
+        }
+
+        const isFilled = this.get(x, y) != null
+        if(isFilled){
+            return false
+        }
+
+        return true
     }
 }
