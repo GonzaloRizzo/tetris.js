@@ -1,6 +1,7 @@
 import Sheet from './sheet';
 import { dropRandom } from './shapes'
 import { applyMatrix } from './utils'
+import { SPEED } from './constants'
 
 export default class LiveSheet extends Sheet {
     constructor(staticSheet, overlaySheet){
@@ -10,7 +11,18 @@ export default class LiveSheet extends Sheet {
         this.centerPoint = [0, 0]
         this.reset()
 
-        setInterval(() => this._applyGravity(), 150)
+    }
+
+    reset(){
+        this.setGravitySpeed(SPEED)
+        this._buffer = this.buildBuffer()
+        dropRandom(this)
+        this._overlaySheet.projectLiveSheet(this, this._staticSheet)
+    }
+
+    setGravitySpeed(speed){
+        clearInterval(this._gravity)
+        this._gravity = setInterval(() => this._applyGravity(), speed)
     }
 
     applyMatrix(matrix){
@@ -49,12 +61,6 @@ export default class LiveSheet extends Sheet {
             this._staticSheet.cleanLines()
             this.reset()
         }
-    }
-
-    reset(){
-        this._buffer = this.buildBuffer()
-        dropRandom(this)
-        this._overlaySheet.projectLiveSheet(this, this._staticSheet)
     }
 
     _move(xOffset=0, yOffset=0){

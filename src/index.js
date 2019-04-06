@@ -1,6 +1,6 @@
 import "babel-polyfill";
 import p5 from 'p5'
-import { BSIZE, XBLOCKS, YBLOCKS, COLORS } from './constants'
+import { BSIZE, XBLOCKS, YBLOCKS, COLORS, DROPING_SPEED, SPEED } from './constants'
 import Sheet from './sheet'
 import LiveSheet from './liveSheet'
 import ProjectedSheet from './projectedSheet'
@@ -43,6 +43,13 @@ new p5(p => {
             liveSheet.rotate()
         }else if (event.key == 'W'){
             liveSheet.rotate(false)
+        }else if (event.key == 's'){
+            liveSheet.setGravitySpeed(DROPING_SPEED)
+        }
+    }
+    p.keyReleased = event => {
+        if (event.key == 's'){
+            liveSheet.setGravitySpeed(SPEED)
         }
     }
 })

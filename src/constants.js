@@ -6,3 +6,5 @@ export const COLORS = {
     'O': 'yellow',
     'T': 'purple',
 }
+export const SPEED = 150
+export const DROPING_SPEED = 25
