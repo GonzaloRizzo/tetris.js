@@ -4,10 +4,11 @@ import { dropRandom } from './shapes'
 import { cloneBuffer, rotatePoint } from './utils'
 
 export default class LiveSheet extends Sheet {
-    constructor(p, staticSheet){
+    constructor(p, staticSheet, overlaySheet){
         super()
         this._p = p
         this._staticSheet = staticSheet
+        this._overlaySheet = overlaySheet
         this.centerPoint = null
         setInterval(() => this.update(), 750)
     }
@@ -53,6 +54,7 @@ export default class LiveSheet extends Sheet {
         }else {
             this.centerPoint[1] += 1
             this._buffer = draftBuffer
+            this._overlaySheet.projectLiveSheet(this, this._staticSheet)
         }
 
         if(bufferIsEmpty) {
@@ -96,6 +98,7 @@ export default class LiveSheet extends Sheet {
             this._buffer=draftBuffer
         }
 
+        this._overlaySheet.projectLiveSheet(this, this._staticSheet)
     }
 
     rotate(clockwise=true){
@@ -128,5 +131,6 @@ export default class LiveSheet extends Sheet {
             this.centerPoint = rotatePoint(this.centerPoint, this.centerPoint)
         }
 
+        this._overlaySheet.projectLiveSheet(this, this._staticSheet)
     }
 }
