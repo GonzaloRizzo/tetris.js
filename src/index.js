@@ -4,18 +4,16 @@ import { BSIZE, XBLOCKS, YBLOCKS, COLORS } from './constants'
 import Sheet from './sheet'
 import LiveSheet from './liveSheet'
 import ProjectedSheet from './projectedSheet'
-import { dropRandom } from './shapes'
 
 const coor = pos => pos * BSIZE
 
 new p5(p => {
     const staticSheet = new Sheet()
     const projectedSheet = new ProjectedSheet()
-    const liveSheet = new LiveSheet(p, staticSheet, projectedSheet)
+    const liveSheet = new LiveSheet(staticSheet, projectedSheet)
 
     p.setup = () => {
         p.createCanvas(XBLOCKS * BSIZE, YBLOCKS * BSIZE)
-        dropRandom(liveSheet)
     };
 
     p.draw = () => {
@@ -39,7 +37,7 @@ new p5(p => {
     p.keyPressed = event => {
         if(event.key == 'a') {
             liveSheet.moveLeft()
-        }else if(event.key=='d'){
+        }else if(event.key == 'd'){
             liveSheet.moveRight()
         }else if (event.key == 'w'){
             liveSheet.rotate()

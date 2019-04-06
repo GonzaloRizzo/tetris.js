@@ -22,5 +22,5 @@ export const dropBlock = (buffer) => {
 }
 
 export const dropRandom = sheet => {
-    randomItem([dropBlock, dropStick])(sheet)
+    randomItem([dropStick])(sheet)
 }

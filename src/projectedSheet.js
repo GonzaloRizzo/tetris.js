@@ -11,20 +11,14 @@ export default class ProjectedSheet extends Sheet {
         const liveSheetDepthLevel = {}
         const staticSheetSurfaceLevel = {}
 
-        liveSheet.iterate((x, y) => {
-            const symbol = liveSheet.get(x, y)
-            if(!symbol){
-                return
-            }
-
+        liveSheet.iterateSymbols((x, y) => {
             if (!liveSheetDepthLevel[x] || liveSheetDepthLevel[x] < y){
                 liveSheetDepthLevel[x] = y
             }
         })
 
-        staticSheet.iterate((x, y) => {
-            const symbol = staticSheet.get(x, y)
-            if(!symbol || !liveSheetDepthLevel[x] || y < liveSheetDepthLevel[x]){
+        staticSheet.iterateSymbols((x, y) => {
+            if(!liveSheetDepthLevel[x] || y < liveSheetDepthLevel[x]){
                 return
             }
 
@@ -38,11 +32,7 @@ export default class ProjectedSheet extends Sheet {
             return distance < shortestDistance ? distance : shortestDistance
         }, YBLOCKS)
 
-        liveSheet.iterate((x, y) => {
-            const symbol = liveSheet.get(x, y)
-            if(!symbol){
-                return
-            }
+        liveSheet.iterateSymbols((x, y, symbol) => {
             this.set(x, y + shortestDistance - 1, symbol)
         })
     }

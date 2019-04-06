@@ -1,136 +1,85 @@
 import Sheet from './sheet';
-import { YBLOCKS, XBLOCKS } from './constants'
 import { dropRandom } from './shapes'
-import { cloneBuffer, rotatePoint } from './utils'
+import { applyMatrix } from './utils'
 
 export default class LiveSheet extends Sheet {
-    constructor(p, staticSheet, overlaySheet){
+    constructor(staticSheet, overlaySheet){
         super()
-        this._p = p
         this._staticSheet = staticSheet
         this._overlaySheet = overlaySheet
-        this.centerPoint = null
-        setInterval(() => this.update(), 750)
+        this.centerPoint = [0, 0]
+        this.reset()
+
+        setInterval(() => this._applyGravity(), 150)
     }
 
-    update(){
-        let shouldFreezeBuffer = false
-        let bufferIsEmpty = true
-        const draftBuffer = cloneBuffer(this._buffer)
+    applyMatrix(matrix){
+        let transformIsValid = true
 
-        this.iterate((x, y) => {
-            const symbol = draftBuffer[x][y]
+        let newSheet = null
+        try {
+            newSheet = new Sheet(super.applyMatrix(matrix, this.centerPoint))
+        } catch {
+            return false
+        }
 
-            if(symbol == null){
-                return
+        newSheet.iterateSymbols((x, y) => {
+            if(!this._staticSheet.positionIsEmpty(x, y)){
+                transformIsValid = false
             }
-            bufferIsEmpty = false
-
-            const nextY = y + 1
-
-            draftBuffer[x][y] = null
-
-            if(nextY >= YBLOCKS || this._staticSheet.get(x, nextY) != null){
-                shouldFreezeBuffer = true
-                return true  // Stops iterating
-            }
-
-            draftBuffer[x][nextY] = symbol
         })
 
-        if(shouldFreezeBuffer){
-            this.iterate((x, y)=>{
-                const symbol = this.get(x, y)
+        if(transformIsValid){
+            this.centerPoint = applyMatrix(this.centerPoint,matrix, this.centerPoint)
+            this._buffer = newSheet._buffer
+        }
 
-                if(symbol == null){
-                    return
-                }
+        this._overlaySheet.projectLiveSheet(this, this._staticSheet)
 
-                this.set(x, y, null)
+        return transformIsValid
+    }
+
+    _applyGravity(){
+        const didMove = this._move(0, 1)
+        if(!didMove){
+            this.iterateSymbols((x, y, symbol) => {
                 this._staticSheet.set(x, y, symbol)
             })
+
             this._staticSheet.cleanLines()
-
-        }else {
-            this.centerPoint[1] += 1
-            this._buffer = draftBuffer
-            this._overlaySheet.projectLiveSheet(this, this._staticSheet)
+            this.reset()
         }
+    }
 
-        if(bufferIsEmpty) {
-            dropRandom(this)
-        }
+    reset(){
+        this._buffer = this.buildBuffer()
+        dropRandom(this)
+        this._overlaySheet.projectLiveSheet(this, this._staticSheet)
+    }
 
+    _move(xOffset=0, yOffset=0){
+        const matrix = [[1, 0, xOffset],
+                        [0, 1, yOffset],
+                        [0, 0, 1]]
+        return this.applyMatrix(matrix)
     }
 
     moveRight(){
-        this._moveX(1)
+        return this._move(1, 0)
     }
 
     moveLeft(){
-        this._moveX(-1)
-    }
-
-    _moveX(xOffset){
-        // todo, don't clone it, just create a new one and place translated blocks there
-        const draftBuffer = cloneBuffer(this._buffer)
-        let isLegal = true
-        const iterator = xOffset < 0 ? this.iterateLeft : this.iterateRight
-        iterator((x, y) => {
-            const symbol = this.get(x, y)
-            if(symbol == null){
-                return
-            }
-            const nextX = x + xOffset
-
-            draftBuffer[x][y] = null
-
-            if(nextX < 0 || nextX >= XBLOCKS || this._staticSheet.get(nextX, y) != null){
-                isLegal = false
-                return true  // Stop iterating
-            }
-
-            draftBuffer[nextX][y] = symbol
-        })
-
-        if(isLegal){
-            this.centerPoint[0] += xOffset
-            this._buffer=draftBuffer
-        }
-
-        this._overlaySheet.projectLiveSheet(this, this._staticSheet)
+        return this._move(-1, 0)
     }
 
     rotate(clockwise=true){
-        if(!this.centerPoint){
-            console.log("There's not center point!")
-            return
-        }
-
-        const draftBuffer = this.buildBuffer()
-        let rotationIsValid = true
-
-        this.iterate((x, y) => {
-            const symbol = this.get(x, y)
-            if(symbol == null){
-                return
-            }
-
-            const [newX, newY] = rotatePoint([x, y], this.centerPoint, clockwise)
-
-            if (!this._staticSheet.positionIsEmpty(newX, newY)){
-                rotationIsValid = false
-                return true
-            }
-
-            draftBuffer[newX][newY] = symbol
-        })
-
-        if(rotationIsValid){
-            this._buffer=draftBuffer
-            this.centerPoint = rotatePoint(this.centerPoint, this.centerPoint)
-        }
-
-        this._overlaySheet.projectLiveSheet(this, this._staticSheet)
+        const rotationMatrix = clockwise
+            ? [[0, -1, 0],
+               [1,  0, 0],
+               [0,  0, 1]]
+            : [[ 0, 1, 0],
+               [-1, 0, 0],
+               [ 0, 0, 1]]
+        return this.applyMatrix(rotationMatrix)
     }
 }
